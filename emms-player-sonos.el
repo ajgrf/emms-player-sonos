@@ -160,6 +160,23 @@ are prepended to the command automatically."
   (interactive "MVolume change amount (+ increase, - decrease): ")
   (emms-player-sonos-run "relative_volume" (number-to-string amount)))
 
+;;; Convenience commands
+
+(defvar emms-player-sonos--speaker-history nil)
+
+;;;###autoload
+(defun emms-player-sonos-set-speaker ()
+  "Prompt and switch to new Sonos speaker name or IP address."
+  (interactive)
+  (let ((speaker (read-string "Sonos speaker: "
+                              emms-player-sonos-speaker
+                              emms-player-sonos--speaker-history
+                              emms-player-sonos-speaker)))
+    (unless (or (string= speaker "")
+                (string= speaker emms-player-sonos-speaker))
+      (emms-stop)
+      (setq emms-player-sonos-speaker speaker))))
+
 ;;; Minor mode
 
 (defvar emms-player-sonos--player-list-backup)
