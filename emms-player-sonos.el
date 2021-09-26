@@ -78,20 +78,36 @@
 (defvar emms-player-sonos-process-name "emms-player-sonos-process"
   "The name of the sonos player process.")
 
-(defun emms-player-sonos-run (&rest args)
-  "Run sonos command with the given ARGS, adding the configured parameters and speaker."
+(defun emms-player-sonos--run (name buffer &rest args)
+  "Run sonos command with the given ARGS.
+NAME is name for process.  It is modified if necessary to make it unique.
+BUFFER is the buffer (or buffer name) to associate with the process.
+
+The values of `emms-player-sonos-parameters' and `emms-player-sonos-speaker'
+are prepended to the command automatically."
   (apply #'start-process
-         emms-player-sonos-process-name
-         nil
+         name
+         buffer
          emms-player-sonos-command-name
          (append emms-player-sonos-parameters
-                 (list emms-player-sonos-speaker)
-                 args)))
+                 (cons emms-player-sonos-speaker
+                       args))))
+
+(defun emms-player-sonos-run (action &rest args)
+  "Run sonos ACTION with the given ARGS.
+
+The values of `emms-player-sonos-parameters' and `emms-player-sonos-speaker'
+are prepended to the command automatically."
+  (let ((name (concat emms-player-sonos-process-name "-" action)))
+    (apply #'emms-player-sonos--run name nil action args)))
 
 (defun emms-player-sonos-start (track)
   "Start the player process with the given TRACK."
   (let* ((filename (emms-track-name track))
-         (process (emms-player-sonos-run "play_file" filename)))
+         (process (emms-player-sonos--run emms-player-sonos-process-name
+                                          nil
+                                          "play_file"
+                                          filename)))
     ;; add a sentinel for signaling termination
     (set-process-sentinel process #'emms-player-simple-sentinel))
   (emms-player-started emms-player-sonos))
