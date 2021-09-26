@@ -90,7 +90,8 @@
 
 (defun emms-player-sonos-stop nil
   "Stop the player process."
-  (emms-player-simple-stop))
+  (emms-player-simple-stop)
+  (emms-player-sonos-run "stop"))
 
 (defun emms-player-sonos-run (&rest args)
   "Run sonos command with the given ARGS, adding the configured parameters and speaker."
