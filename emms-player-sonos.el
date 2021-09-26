@@ -160,5 +160,35 @@ are prepended to the command automatically."
   (interactive "MVolume change amount (+ increase, - decrease): ")
   (emms-player-sonos-run "relative_volume" (number-to-string amount)))
 
+;;; Minor mode
+
+(defvar emms-player-sonos--player-list-backup)
+(defvar emms-player-sonos--volume-change-function-backup)
+
+(defun emms-player-sonos--mode-init ()
+  "Initialization code for `emms-player-sonos-mode'."
+  (emms-stop)
+  ;; Save old values
+  (setq emms-player-sonos--player-list-backup emms-player-list
+        emms-player-sonos--volume-change-function-backup emms-volume-change-function)
+  (setq emms-player-list '(emms-player-sonos)
+        emms-volume-change-function #'emms-volume-sonos-change))
+
+(defun emms-player-sonos--mode-clean-up ()
+  "Cleanup code for `emms-player-sonos-mode'."
+  (emms-stop)
+  ;; Restore old values
+  (setq emms-player-list emms-player-sonos--player-list-backup
+        emms-volume-change-function emms-player-sonos--volume-change-function-backup))
+
+;;;###autoload
+(define-minor-mode emms-player-sonos-mode
+  "Toggle EMMS Sonos player minor mode.
+Sets `emms-player-list' and `emms-volume-change-function' for Sonos output."
+  :global t
+  (if emms-player-sonos-mode
+      (emms-player-sonos--mode-init)
+    (emms-player-sonos--mode-clean-up)))
+
 (provide 'emms-player-sonos)
 ;;; emms-player-sonos.el ends here
