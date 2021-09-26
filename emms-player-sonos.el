@@ -76,7 +76,7 @@
 
 ;; Global variables
 (defvar emms-player-sonos-process-name "emms-player-sonos-process"
-  "The name of the sonos player process")
+  "The name of the sonos player process.")
 
 (defun emms-player-sonos-run (&rest args)
   "Run sonos command with the given ARGS, adding the configured parameters and speaker."
