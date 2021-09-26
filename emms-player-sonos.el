@@ -71,6 +71,8 @@
 
 (emms-player-set emms-player-sonos 'pause #'emms-player-sonos-pause)
 (emms-player-set emms-player-sonos 'resume #'emms-player-sonos-resume)
+(emms-player-set emms-player-sonos 'seek #'emms-player-sonos-seek)
+(emms-player-set emms-player-sonos 'seek-to #'emms-player-sonos-seek-to)
 
 ;; Global variables
 (defvar emms-player-sonos-process-name "emms-player-sonos-process"
@@ -109,6 +111,19 @@
 (defun emms-player-sonos-resume ()
   "Resume the Sonos player."
   (emms-player-sonos-run "play"))
+
+(defun emms-player-sonos-seek (sec)
+  "Seek backward or forward by SEC seconds, depending on sign of SEC."
+  (if (> sec 0)
+      (emms-player-sonos-run "seek_forward"
+                             (number-to-string sec))
+    (emms-player-sonos-run "seek_back"
+                           (number-to-string (- sec)))))
+
+(defun emms-player-sonos-seek-to (sec)
+  "Seek to SEC seconds from the start of the current track."
+  (emms-player-sonos-run "seek"
+                         (number-to-string sec)))
 
 (defun emms-player-sonos-playable-p (track)
   "Return non-nil when we can play this TRACK."
