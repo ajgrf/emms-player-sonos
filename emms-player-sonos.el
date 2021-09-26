@@ -54,7 +54,7 @@
   :type 'string)
 
 (defcustom emms-player-sonos-parameters
-  '("--use-local-speaker-list")
+  '("--use-local-speaker-list" "--no-env")
   "The arguments to `emms-player-sonos-command-name'."
   :type '(repeat string))
 
