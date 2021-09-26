@@ -72,36 +72,35 @@
 (emms-player-set emms-player-sonos 'pause #'emms-player-sonos-pause)
 (emms-player-set emms-player-sonos 'resume #'emms-player-sonos-resume)
 
-(defun emms-player-sonos-start (track)
-  "Start the player process with the given TRACK."
-  (let* ((filename (emms-track-name track))
-         (process (apply #'start-process
-                         emms-player-simple-process-name
-                         nil
-                         emms-player-sonos-command-name
-                         ;; splice in params here
-                         (append emms-player-sonos-parameters
-                                 (list emms-player-sonos-speaker
-                                       "play_file"
-                                       filename)))))
-    ;; add a sentinel for signaling termination
-    (set-process-sentinel process #'emms-player-simple-sentinel))
-  (emms-player-started emms-player-sonos))
-
-(defun emms-player-sonos-stop nil
-  "Stop the player process."
-  (emms-player-simple-stop)
-  (emms-player-sonos-run "stop"))
+;; Global variables
+(defvar emms-player-sonos-process-name "emms-player-sonos-process"
+  "The name of the sonos player process")
 
 (defun emms-player-sonos-run (&rest args)
   "Run sonos command with the given ARGS, adding the configured parameters and speaker."
   (apply #'start-process
-         emms-player-sonos-command-name
+         emms-player-sonos-process-name
          nil
          emms-player-sonos-command-name
          (append emms-player-sonos-parameters
                  (list emms-player-sonos-speaker)
                  args)))
+
+(defun emms-player-sonos-start (track)
+  "Start the player process with the given TRACK."
+  (let* ((filename (emms-track-name track))
+         (process (emms-player-sonos-run "play_file" filename)))
+    ;; add a sentinel for signaling termination
+    (set-process-sentinel process #'emms-player-simple-sentinel))
+  (emms-player-started emms-player-sonos))
+
+(defun emms-player-sonos-stop ()
+  "Stop the player process."
+  (let ((process (get-process emms-player-sonos-process-name)))
+    (when process
+      (kill-process process)
+      (delete-process process)
+      (emms-player-sonos-run "stop"))))
 
 (defun emms-player-sonos-pause ()
   "Pause the Sonos player."
