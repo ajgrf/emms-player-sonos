@@ -32,8 +32,12 @@
 ;;  the usefulness of this. Still neat, though.
 
 ;; Add the following to your `emms-player-list':
-
+;;
 ;; emms-player-sonos
+
+;; To change the volume on your Sonos speakers, do the following:
+;;
+;;   (setq emms-volume-change-function #'emms-volume-sonos-change)
 
 ;;; Code:
 
@@ -148,6 +152,13 @@ are prepended to the command automatically."
              '(file))
        (string-match (emms-player-get emms-player-sonos 'regex)
                      (emms-track-name track))))
+
+;;; Volume
+
+(defun emms-volume-sonos-change (amount)
+  "Change volume up or down by AMOUNT, depending on sign of AMOUNT."
+  (interactive "MVolume change amount (+ increase, - decrease): ")
+  (emms-player-sonos-run "relative_volume" (number-to-string amount)))
 
 (provide 'emms-player-sonos)
 ;;; emms-player-sonos.el ends here
