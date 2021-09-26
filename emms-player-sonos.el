@@ -49,7 +49,7 @@
   "The command name of sonos."
   :type 'file)
 
-(defcustom emms-player-sonos-speaker "_all_"
+(defcustom emms-player-sonos-speaker (or (getenv "SPKR") "_all_")
   "Name or IP address of the Sonos speaker to play through."
   :type 'string)
 
