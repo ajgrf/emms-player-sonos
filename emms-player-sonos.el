@@ -162,16 +162,22 @@ are prepended to the command automatically."
 
 ;;; Convenience commands
 
-(defvar emms-player-sonos--speaker-history nil)
+(defun emms-player-sonos--get-speakers ()
+  (let* ((output (shell-command-to-string
+                  (concat "sonos-discover | awk -F '  +' "
+                          "'NR > 5 { if ($1) { print $1 } else { exit } }'")))
+         (speakers (split-string output "\n" t)))
+    (cons "_all_"
+          speakers)))
 
 ;;;###autoload
 (defun emms-player-sonos-set-speaker ()
   "Prompt and switch to new Sonos speaker name or IP address."
   (interactive)
-  (let ((speaker (read-string "Sonos speaker: "
-                              emms-player-sonos-speaker
-                              emms-player-sonos--speaker-history
-                              emms-player-sonos-speaker)))
+  (let ((speaker (completing-read "Sonos speaker: "
+                                  (emms-player-sonos--get-speakers)
+                                  nil
+                                  :require-match)))
     (unless (or (string= speaker "")
                 (string= speaker emms-player-sonos-speaker))
       (emms-stop)
