@@ -4,7 +4,7 @@
 ;; Maintainer: Alex Griffin <a@ajgrf.com>
 ;; Version: 0.1.0
 ;; Homepage: https://github.com/ajgrf/emms-player-sonos
-;; Package-Requires: ((emacs "24.3"))
+;; Package-Requires: ((emacs "25.1"))
 
 ;; This file is not part of GNU Emacs.
 
@@ -43,6 +43,7 @@
 
 (require 'emms)
 (require 'emms-player-simple)
+(require 'subr-x)
 
 (defgroup emms-player-sonos nil
   "EMMS player for sonos."
@@ -60,6 +61,14 @@
 (defcustom emms-player-sonos-parameters
   '("--use-local-speaker-list" "--no-env")
   "The arguments to `emms-player-sonos-command-name'."
+  :type '(repeat string))
+
+(defcustom emms-player-sonos-discover-command-name "sonos-discover"
+  "The command name of sonos-discover."
+  :type 'file)
+
+(defcustom emms-player-sonos-discover-parameters '()
+  "The arguments to `emms-player-sonos-discover-command-name'."
   :type '(repeat string))
 
 (defcustom emms-player-sonos
@@ -162,13 +171,32 @@ are prepended to the command automatically."
 
 ;;; Convenience commands
 
+(defvar emms-player-sonos-speakers nil
+  "The list of available Sonos speakers.")
+
+;;;###autoload
+(defun emms-player-sonos-refresh-speaker-cache ()
+  "Refresh the local speaker cache."
+  (interactive)
+  (let* ((command (string-join (cons emms-player-sonos-discover-command-name
+                                     emms-player-sonos-discover-parameters)
+                               " "))
+         (output (shell-command-to-string command))
+         (lines (split-string output "\n"))
+         (narrowed-lines (seq-take-while (lambda (s)
+                                           (not (string-empty-p s)))
+                                         (seq-drop lines 5)))
+         (rows (mapcar (lambda (line)
+                         (split-string line "  +"))
+                       narrowed-lines))
+         (speakers (mapcar #'car rows)))
+    (setq emms-player-sonos-speakers (cons "_all_" speakers))))
+
 (defun emms-player-sonos--get-speakers ()
-  (let* ((output (shell-command-to-string
-                  (concat "sonos-discover | awk -F '  +' "
-                          "'NR > 5 { if ($1) { print $1 } else { exit } }'")))
-         (speakers (split-string output "\n" t)))
-    (cons "_all_"
-          speakers)))
+  "Return the list of available Sonos speakers."
+  (if emms-player-sonos-speakers
+      emms-player-sonos-speakers
+    (emms-player-sonos-refresh-speaker-cache)))
 
 ;;;###autoload
 (defun emms-player-sonos-set-speaker ()
