@@ -216,10 +216,7 @@ are prepended to the command automatically."
                                   (emms-player-sonos--get-speakers)
                                   nil
                                   :require-match)))
-    (unless (or (string= speaker "")
-                (string= speaker emms-player-sonos-speaker))
-      (emms-stop)
-      (setq emms-player-sonos-speaker speaker))))
+    (setq emms-player-sonos-speaker speaker)))
 
 ;;; Minor mode
 
