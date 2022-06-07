@@ -162,6 +162,16 @@ are prepended to the command automatically."
        (string-match (emms-player-get emms-player-sonos 'regex)
                      (emms-track-name track))))
 
+;;;###autoload
+(defun emms-player-sonos-preference-f (track players)
+  "Return `emms-player-sonos' if it's found in PLAYERS."
+  (cond ((memq 'emms-player-sonos players)
+         'emms-player-sonos)
+        (emms-player-sonos--players-preference-f-backup
+         (funcall emms-player-sonos--players-preference-f-backup
+                  track players))
+        (t (car players))))
+
 ;;; Volume
 
 (defun emms-volume-sonos-change (amount)
@@ -214,22 +224,24 @@ are prepended to the command automatically."
 ;;; Minor mode
 
 (defvar emms-player-sonos--player-list-backup)
+(defvar emms-player-sonos--players-preference-f-backup)
 (defvar emms-player-sonos--volume-change-function-backup)
 
 (defun emms-player-sonos--mode-init ()
   "Initialization code for `emms-player-sonos-mode'."
-  (emms-stop)
   ;; Save old values
   (setq emms-player-sonos--player-list-backup emms-player-list
+        emms-player-sonos--players-preference-f-backup emms-players-preference-f
         emms-player-sonos--volume-change-function-backup emms-volume-change-function)
-  (setq emms-player-list '(emms-player-sonos)
-        emms-volume-change-function #'emms-volume-sonos-change))
+  (setq emms-players-preference-f #'emms-player-sonos-preference-f
+        emms-volume-change-function #'emms-volume-sonos-change)
+  (add-to-list 'emms-player-list 'emms-player-sonos))
 
 (defun emms-player-sonos--mode-clean-up ()
   "Cleanup code for `emms-player-sonos-mode'."
-  (emms-stop)
   ;; Restore old values
   (setq emms-player-list emms-player-sonos--player-list-backup
+        emms-players-preference-f emms-player-sonos--players-preference-f-backup
         emms-volume-change-function emms-player-sonos--volume-change-function-backup))
 
 ;;;###autoload
