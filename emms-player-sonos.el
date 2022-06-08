@@ -91,6 +91,9 @@
 (defvar emms-player-sonos-process-name "emms-player-sonos-process"
   "The name of the sonos player process.")
 
+(defvar emms-player-sonos-current-speaker nil
+  "Name or IP address of the currently playing Sonos speaker.")
+
 (defun emms-player-sonos--run (name buffer &rest args)
   "Run sonos command with the given ARGS.
 NAME is name for process.  It is modified if necessary to make it unique.
@@ -103,7 +106,7 @@ are prepended to the command automatically."
          buffer
          emms-player-sonos-command-name
          (append emms-player-sonos-parameters
-                 (cons emms-player-sonos-speaker
+                 (cons emms-player-sonos-current-speaker
                        args))))
 
 (defun emms-player-sonos-run (action &rest args)
@@ -116,6 +119,10 @@ are prepended to the command automatically."
 
 (defun emms-player-sonos-start (track)
   "Start the player process with the given TRACK."
+
+  ;; Update the current speaker.
+  (setq emms-player-sonos-current-speaker emms-player-sonos-speaker)
+
   (let* ((filename (emms-track-name track))
          (process (emms-player-sonos--run emms-player-sonos-process-name
                                           nil
@@ -123,6 +130,7 @@ are prepended to the command automatically."
                                           filename)))
     ;; add a sentinel for signaling termination
     (set-process-sentinel process #'emms-player-simple-sentinel))
+
   (emms-player-started emms-player-sonos))
 
 (defun emms-player-sonos-stop ()
